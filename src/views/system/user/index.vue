@@ -151,243 +151,243 @@
 </template>
 
 <script>
-  import { createUser, deleteUser, queryUserList, updateUser,updateUserRole } from '@/api/system/user/user'
-  import { queryRoleList } from '@/api/system/role/role'
+import { createUser, deleteUser, queryUserList, updateUser, updateUserRole } from '@/api/system/user/user'
+import { queryRoleList } from '@/api/system/role/role'
 
-  import waves from '@/directive/waves'
-  import Pagination from '@/components/Pagination'
+import waves from '@/directive/waves'
+import Pagination from '@/components/Pagination'
 
-  const calendarTypeOptions = [
-    { key: 'CN', display_name: 'China' },
-    { key: 'US', display_name: 'USA' },
-    { key: 'JP', display_name: 'Japan' },
-    { key: 'EU', display_name: 'Eurozone' }
-  ]
+const calendarTypeOptions = [
+  { key: 'CN', display_name: 'China' },
+  { key: 'US', display_name: 'USA' },
+  { key: 'JP', display_name: 'Japan' },
+  { key: 'EU', display_name: 'Eurozone' }
+]
 
-  // arr to obj, such as { CN : "China", US : "USA" }
-  const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-    acc[cur.key] = cur.display_name
-    return acc
-  }, {})
+// arr to obj, such as { CN : "China", US : "USA" }
+const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
+  acc[cur.key] = cur.display_name
+  return acc
+}, {})
 
-  export default {
-    name: 'ComplexTable',
-    components: { Pagination },
-    directives: { waves },
-    filters: {
-      statusFilter(status) {
-        const statusMap = {
-          published: 'success',
-          draft: 'info',
-          deleted: 'danger'
-        }
-        return statusMap[status]
-      },
-      typeFilter(type) {
-        return calendarTypeKeyValue[type]
-      },
+export default {
+  name: 'ComplexTable',
+  components: { Pagination },
+  directives: { waves },
+  filters: {
+    statusFilter(status) {
+      const statusMap = {
+        published: 'success',
+        draft: 'info',
+        deleted: 'danger'
+      }
+      return statusMap[status]
     },
-    data() {
-      return {
-        tableKey: 0,
-        list: null,
-        total: 0,
-        listLoading: true,
-        listQuery: {
-          current: 1,
-          pageSize: 10,
-          name: '',
-          phone: '',
-          nickName: '',
-          importance: undefined,
-          title: undefined,
-          type: undefined,
-          sort: '+id'
-        },
-        importanceOptions: [1, 2, 3],
-        sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
-        statusOptions: ['published', 'draft', 'deleted'],
-        showReviewer: false,
-        temp: {
-          id: undefined,
-          importance: 1,
-          remarks: '',
-          title: '',
-          email: '',
-          type: '',
-          mobile: '',
-          nickName: '',
-          status: '',
-          roleId: '',
-          role_id: '',
-          deptId: undefined,
-        },
-        dialogFormVisible: false,
-        dialogStatus: '',
-        textMap: {
-          update: 'Edit',
-          create: 'Create'
-        },
-        dialogPvVisible: false,
-        dialogRoleVisible: false,
-        pvData: [],
-        rules: {
-          type: [{ required: true, message: 'type is required', trigger: 'change' }],
-          timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-          title: [{ required: true, message: 'title is required', trigger: 'blur' }]
-        },
-        downloadLoading: false,
-        options: [],
-        value: '',
-        userRole: {
-          userId: '',
-          roleId: ''
-        },
+    typeFilter(type) {
+      return calendarTypeKeyValue[type]
+    }
+  },
+  data() {
+    return {
+      tableKey: 0,
+      list: null,
+      total: 0,
+      listLoading: true,
+      listQuery: {
+        current: 1,
+        pageSize: 10,
+        name: '',
+        phone: '',
+        nickName: '',
+        importance: undefined,
+        title: undefined,
+        type: undefined,
+        sort: '+id'
+      },
+      importanceOptions: [1, 2, 3],
+      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
+      statusOptions: ['published', 'draft', 'deleted'],
+      showReviewer: false,
+      temp: {
+        id: undefined,
+        importance: 1,
+        remarks: '',
+        title: '',
+        email: '',
+        type: '',
+        mobile: '',
+        nickName: '',
+        status: '',
+        roleId: '',
+        role_id: '',
+        deptId: undefined
+      },
+      dialogFormVisible: false,
+      dialogStatus: '',
+      textMap: {
+        update: 'Edit',
+        create: 'Create'
+      },
+      dialogPvVisible: false,
+      dialogRoleVisible: false,
+      pvData: [],
+      rules: {
+        type: [{ required: true, message: 'type is required', trigger: 'change' }],
+        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
+        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+      },
+      downloadLoading: false,
+      options: [],
+      value: '',
+      userRole: {
+        userId: '',
+        roleId: ''
+      }
+    }
+  },
+  created() {
+    this.getList()
+    this.getRoleList()
+  },
+  methods: {
+    getList() {
+      this.listLoading = true
+      queryUserList(this.listQuery).then(response => {
+        console.log(response.data)
+        this.list = response.data
+        this.total = response.total
+        this.listLoading = false
+      })
+    },
+    handleFilter() {
+      this.listQuery.current = 1
+      this.getList()
+    },
+    handleModifyStatus(row, status) {
+      this.$message({
+        message: '操作成功',
+        type: 'success'
+      })
+      row.status = status
+    },
+    sortChange(data) {
+      const { prop, order } = data
+      if (prop === 'id') {
+        this.sortByID(order)
       }
     },
-    created() {
-      this.getList()
-      this.getRoleList()
+    sortByID(order) {
+      if (order === 'ascending') {
+        this.listQuery.sort = '+id'
+      } else {
+        this.listQuery.sort = '-id'
+      }
+      this.handleFilter()
     },
-    methods: {
-      getList() {
-        this.listLoading = true
-        queryUserList(this.listQuery).then(response => {
-          console.log(response.data)
-          this.list = response.data
-          this.total = response.total
-          this.listLoading = false
+    resetTemp() {
+      this.temp = {
+        id: undefined,
+        name: '',
+        age: '',
+        phone: '',
+        email: '',
+        createTime: new Date(),
+        remarks: ''
+      }
+    },
+    handleCreate() {
+      this.resetTemp()
+      this.dialogStatus = 'create'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
+    },
+    createData() {
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          this.temp.role_id = this.temp.roleId + ''
+          createUser(this.temp).then(() => {
+            this.getList()
+            this.dialogFormVisible = false
+            this.$notify({
+              title: '成功',
+              message: '创建成功',
+              type: 'success'
+            })
+          })
+        }
+      })
+    },
+    handleUpdate(row) {
+      this.temp = Object.assign({}, row)
+      this.temp.status = row.status + ''
+      this.dialogStatus = 'update'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
+    },
+    updateData() {
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          const tempData = Object.assign({}, this.temp)
+          tempData.role_id = this.temp.roleId + ''
+          updateUser(tempData).then(() => {
+            for (const v of this.list) {
+              if (v.id === this.temp.id) {
+                const index = this.list.indexOf(v)
+                this.list.splice(index, 1, this.temp)
+                break
+              }
+            }
+            this.dialogFormVisible = false
+            this.$notify({
+              title: '成功',
+              message: '更新成功',
+              type: 'success'
+            })
+          })
+        }
+      })
+    },
+    handleDelete(row) {
+      this.$confirm('此操作将永久删除该条数据, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'error'
+      }).then(() => {
+        deleteUser(row.id).then(response => {
+          this.getList()
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          })
         })
-      },
-      handleFilter() {
-        this.listQuery.current = 1
-        this.getList()
-      },
-      handleModifyStatus(row, status) {
+      }).catch(() => {
         this.$message({
-          message: '操作成功',
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
+    },
+
+    updateRoleData() {
+      console.log(this.userRole)
+      updateUserRole(this.userRole).then(() => {
+        this.dialogRoleVisible = false
+        this.$notify({
+          title: '成功',
+          message: '更新成功',
           type: 'success'
         })
-        row.status = status
-      },
-      sortChange(data) {
-        const { prop, order } = data
-        if (prop === 'id') {
-          this.sortByID(order)
-        }
-      },
-      sortByID(order) {
-        if (order === 'ascending') {
-          this.listQuery.sort = '+id'
-        } else {
-          this.listQuery.sort = '-id'
-        }
-        this.handleFilter()
-      },
-      resetTemp() {
-        this.temp = {
-          id: undefined,
-          name: '',
-          age: '',
-          phone: '',
-          email: '',
-          createTime: new Date(),
-          remarks: ''
-        }
-      },
-      handleCreate() {
-        this.resetTemp()
-        this.dialogStatus = 'create'
-        this.dialogFormVisible = true
-        this.$nextTick(() => {
-          this.$refs['dataForm'].clearValidate()
-        })
-      },
-      createData() {
-        this.$refs['dataForm'].validate((valid) => {
-          if (valid) {
-            this.temp.role_id = this.temp.roleId+''
-            createUser(this.temp).then(() => {
-              this.getList()
-              this.dialogFormVisible = false
-              this.$notify({
-                title: '成功',
-                message: '创建成功',
-                type: 'success'
-              })
-            })
-          }
-        })
-      },
-      handleUpdate(row) {
-        this.temp = Object.assign({}, row)
-        this.temp.status = row.status+''
-        this.dialogStatus = 'update'
-        this.dialogFormVisible = true
-        this.$nextTick(() => {
-          this.$refs['dataForm'].clearValidate()
-        })
-      },
-      updateData() {
-        this.$refs['dataForm'].validate((valid) => {
-          if (valid) {
-            const tempData = Object.assign({}, this.temp)
-            tempData.role_id = this.temp.roleId+''
-            updateUser(tempData).then(() => {
-              for (const v of this.list) {
-                if (v.id === this.temp.id) {
-                  const index = this.list.indexOf(v)
-                  this.list.splice(index, 1, this.temp)
-                  break
-                }
-              }
-              this.dialogFormVisible = false
-              this.$notify({
-                title: '成功',
-                message: '更新成功',
-                type: 'success'
-              })
-            })
-          }
-        })
-      },
-      handleDelete(row) {
-        this.$confirm('此操作将永久删除该条数据, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'error'
-        }).then(() => {
-          deleteUser(row.id).then(response => {
-            this.getList()
-            this.$message({
-              type: 'success',
-              message: '删除成功!'
-            })
-          })
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
-          })
-        })
-      },
-
-      updateRoleData() {
-        console.log(this.userRole)
-        updateUserRole(this.userRole).then(() => {
-          this.dialogRoleVisible = false
-          this.$notify({
-            title: '成功',
-            message: '更新成功',
-            type: 'success'
-          })
-        })
-      },
-      getRoleList() {
-        queryRoleList(this.listQuery).then(response => {
-          this.options=response.data
-        })
-      },
+      })
+    },
+    getRoleList() {
+      queryRoleList(this.listQuery).then(response => {
+        this.options = response.data
+      })
     }
   }
+}
 </script>

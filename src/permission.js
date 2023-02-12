@@ -1,7 +1,6 @@
 import router from './router'
 import store from './store'
 import Layout from '@/layout'
-import { Message } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import { getToken } from '@/utils/auth' // get token from cookie
@@ -44,16 +43,15 @@ router.beforeEach(async(to, from, next) => {
 
           const menus = filterAsyncRouter(store.getters.menus) // 1.过滤路由
 
-          console.log(menus,221133)
+          console.log(menus, 221133)
 
           router.addRoutes(menus) // 2.动态添加路由
-          console.log(router,1132232)
+          console.log(router, 1132232)
           global.antRouter = menus // 3.将路由数据传递给全局变量，做侧边栏菜单渲染工作
           next({
             ...to,
             replace: true
           })
-
         } catch (error) {
           // remove token and go to login page to re-login
           await store.dispatch('user/resetToken')
@@ -90,7 +88,7 @@ function filterAsyncRouter(asyncRouterMap) {
       if (router.component === 'Layout') { // Layout组件特殊处理
         router.component = Layout
       } else {
-      router.component = _import(component)
+        router.component = _import(component)
       }
     }
     router.hidden = false
@@ -108,8 +106,6 @@ function filterAsyncRouter(asyncRouterMap) {
     }
     return true
   })
-  console.log(accessedRouters,555555)
+  console.log(accessedRouters, 555555)
   return accessedRouters
 }
-
-

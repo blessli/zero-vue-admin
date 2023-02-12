@@ -1,7 +1,7 @@
 import { login, logout, getInfo } from '@/api/system/user/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
-import {tree} from "@/utils/utils";
+import { tree } from '@/utils/utils'
 
 const getDefaultState = () => {
   return {
@@ -38,10 +38,11 @@ const actions = {
     return new Promise((resolve, reject) => {
       login({ userName: username.trim(), password: password }).then(response => {
         const { token } = response
-        commit('SET_TOKEN', "Bearer " + token)
-        setToken("Bearer " + token)
+        commit('SET_TOKEN', 'Bearer ' + token)
+        setToken('Bearer ' + token)
         resolve()
       }).catch(error => {
+        console.log('debug', error)
         reject(error)
       })
     })
@@ -51,7 +52,7 @@ const actions = {
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
       getInfo().then(response => {
-        const { name, avatar,menuTreeVue } = response
+        const { name, avatar, menuTreeVue } = response
 
         // if (!data) {
         //   return reject('Verification failed, please Login again.')
@@ -72,7 +73,7 @@ const actions = {
         //   hidden: true
         // })
 
-        commit('SET_MENUS', tree(menuTreeVue,0,'parentId'))
+        commit('SET_MENUS', tree(menuTreeVue, 0, 'parentId'))
         resolve(menuTreeVue)
       }).catch(error => {
         reject(error)

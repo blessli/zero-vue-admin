@@ -20,7 +20,7 @@ export function deleteDept(id) {
   return request({
     url: '/api/sys/dept/delete',
     method: 'post',
-    data: {id:id}
+    data: { id: id }
   })
 }
 
